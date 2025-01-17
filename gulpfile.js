@@ -1,4 +1,6 @@
 const fs = require('fs');
+const path = require('path');
+
 const pkg = require('./package.json')
 const glob = require('glob')
 const yargs = require('yargs')
@@ -99,6 +101,65 @@ gulp.task('js-es5', () => {
         });
     });
 })
+
+const examplesFolder = './examples'; // Path to the folder containing Markdown files
+const indexTemplateFile = './index.template.html'; 
+const indexFile = './index.html'; 
+
+// Task to generate sections for Markdown files
+gulp.task('generate-sections', (done) => {
+    // Read all files in the examples folder
+    fs.readdir(examplesFolder, (err, files) => {
+      if (err) {
+        console.error('Error reading examples folder:', err);
+        return done(err);
+      }
+  
+      // Filter for Markdown files
+      const markdownFiles = files.filter(file => path.extname(file) === '.md');
+  
+      // Generate section tags for each Markdown file
+      const sections = markdownFiles.map(file => `
+        <section
+          data-markdown="${examplesFolder}/${file}"
+          data-separator-vertical="^\\r?\\n===\\r?\\n$"
+          data-separator-notes="^Note:"
+          data-charset="iso-8859-15"
+          id="${path.basename(file, path.extname(file))}"
+        >
+          <!--
+              Note that Windows uses \`\\r\\n\` instead of \`\\n\` as its linefeed character.
+              For a regex that supports all operating systems, use \`\\r?\\n\` instead of \`\\n\`.
+          -->
+        </section>
+      `).join('\n');
+  
+      // Read the index.html file
+      fs.readFile(indexTemplateFile, 'utf8', (err, data) => {
+        if (err) {
+          console.error('Error reading index.html:', err);
+          return done(err);
+        }
+  
+        // Insert the generated sections before the closing </body> tag
+        const updatedHtml = data.replace(
+          '<!-- Insert slide here -->',
+          `${sections}\n`
+        );
+  
+        // Write the updated HTML back to index.html
+        fs.writeFile(indexFile, updatedHtml, 'utf8', err => {
+          if (err) {
+            console.error('Error writing to index.html:', err);
+            return done(err);
+          }
+  
+          console.log('Sections successfully added to index.html');
+          done();
+        });
+      });
+    });
+  });
 
 // Creates an ES module bundle
 gulp.task('js-es6', () => {
@@ -273,7 +334,7 @@ gulp.task('test', gulp.series( 'eslint', 'qunit' ))
 
 gulp.task('default', gulp.series(gulp.parallel('js', 'css', 'plugins'), 'test'))
 
-gulp.task('build', gulp.parallel('js', 'css', 'plugins'))
+gulp.task('build', gulp.parallel('generate-sections','js', 'css', 'plugins'))
 
 gulp.task('package', gulp.series(async () => {
 
@@ -310,6 +371,7 @@ gulp.task('serve', () => {
         slidesRoot + '**/*.html',
         slidesRoot + '**/*.md',
         `!${slidesRoot}**/node_modules/**`, // ignore node_modules
+        `!${slidesRoot}/index.html`
     ], gulp.series('reload'))
 
     gulp.watch(['js/**'], gulp.series('js', 'reload', 'eslint'))
