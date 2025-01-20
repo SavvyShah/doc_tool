@@ -103,8 +103,8 @@ gulp.task('js-es5', () => {
 })
 
 const examplesFolder = './examples'; // Path to the folder containing Markdown files
-const indexTemplateFile = './index.template.html'; 
-const indexFile = './index.html'; 
+const indexTemplateFile = './html/index.template.html'; 
+const indexFile = './html/index.html'; 
 
 // Task to generate sections for Markdown files
 gulp.task('generate-sections', (done) => {
@@ -121,7 +121,7 @@ gulp.task('generate-sections', (done) => {
       // Generate section tags for each Markdown file
       const sections = markdownFiles.map(file => `
         <section
-          data-markdown="${examplesFolder}/${file}"
+          data-markdown="../${examplesFolder}/${file}"
           data-separator-vertical="^\\r?\\n===\\r?\\n$"
           data-separator-notes="^Note:"
           data-charset="iso-8859-15"
@@ -188,12 +188,12 @@ gulp.task('js', gulp.parallel('js-es5', 'js-es6'));
 // built-in plugins
 gulp.task('plugins', () => {
     return Promise.all([
-        { name: 'RevealHighlight', input: './plugin/highlight/plugin.js', output: './plugin/highlight/highlight' },
-        { name: 'RevealMarkdown', input: './plugin/markdown/plugin.js', output: './plugin/markdown/markdown' },
-        { name: 'RevealSearch', input: './plugin/search/plugin.js', output: './plugin/search/search' },
-        { name: 'RevealNotes', input: './plugin/notes/plugin.js', output: './plugin/notes/notes' },
-        { name: 'RevealZoom', input: './plugin/zoom/plugin.js', output: './plugin/zoom/zoom' },
-        { name: 'RevealMath', input: './plugin/math/plugin.js', output: './plugin/math/math' },
+        { name: 'RevealHighlight', input: './plugin/highlight/plugin.js', output: './html/plugin/highlight/highlight' },
+        { name: 'RevealMarkdown', input: './plugin/markdown/plugin.js', output: './html/plugin/markdown/markdown' },
+        { name: 'RevealSearch', input: './plugin/search/plugin.js', output: './html/plugin/search/search' },
+        { name: 'RevealNotes', input: './plugin/notes/plugin.js', output: './html/plugin/notes/notes' },
+        { name: 'RevealZoom', input: './plugin/zoom/plugin.js', output: './html/plugin/zoom/zoom' },
+        { name: 'RevealMath', input: './plugin/math/plugin.js', output: './html/plugin/math/math' },
     ].map( plugin => {
         return rollup({
                 cache: cache[plugin.input],
