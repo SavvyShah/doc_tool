@@ -19,7 +19,8 @@ build:
     build:
         html:
           - npm run build
-          - cp -r html/ $READTHEDOCS_OUTPUT
+          - mkdir -p $READTHEDOCS_OUTPUT/
+          - cp -r html/ $READTHEDOCS_OUTPUT/
 
 submodules:
   include: all
